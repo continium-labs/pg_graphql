@@ -1,0 +1,36 @@
+name: Build and Deploy to GKE
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  IMAGE: relevanz-be
+
+jobs:
+  setup-build-publish-deploy:
+    name: Setup, Build, Publish
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout working branch
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # Build the Docker image
+      - name: Build
+        run: |-
+          docker build \
+          -f dockerfiles/db/Dockerfile \
+          --tag "continiumlabs/pg_twentycrm:latest" .
+
+      - name: Publish
+        run: |-
+          docker push "continiumlabs/pg_twentycrm:latest"
